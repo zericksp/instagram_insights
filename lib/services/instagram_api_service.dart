@@ -7,8 +7,8 @@ import 'package:http/http.dart' as http;
 
 class InstagramApiService {
   static const String _baseUrl = 'https://graph.facebook.com/v23.0';
-  static const String _accessToken = 'EAAHiJmTg9dkBPdoxZAJ3Ystlg2oKk1x3XyZBARg7OWGJVz2HxU137MIz2lr7jiZAYT9134JA56cctuOnDZAa0VOuKhxRevhMEviVW032NiTRKDGEXczzVj1dDtPwtZALK0LPGrZCa6QZBJOnRjWtEdnU65Jpdd7wyDbZAsYcCejdFpZB1UBZAwKSZBAemtTjnHCP5fcTZC8IFZC7V9tZAiHBJ39Xtm8SqOhxnWbVIoZCSPy';
-  static const String _instagramAccountId = '17841415250388479';
+  static const String _accessToken = 'seu token';
+  static const String _instagramAccountId = '17578419220388479';
 
   Future<Map<String, dynamic>> getOverviewData() async {
     try {
