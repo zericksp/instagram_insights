@@ -315,12 +315,12 @@ Se este projeto te ajudou, considere dar uma ⭐ no GitHub!
 ---
 
 <div align="center">
-  <p>Desenvolvido com ❤️ por <a href="https://github.com/seuusuario">Seu Nome</a></p>
+  <p>Desenvolvido com ❤️ por <a href="https://github.com/zericksp">José Ricardo dos Santos</a></p>
   <p>
-    <a href="https://github.com/seuusuario/instagram-insights-dashboard">🏠 Home</a>
+    <a href="https://github.com/zericksp/instagram-insights-dashboard">🏠 Home</a>
     ·
-    <a href="https://github.com/seuusuario/instagram-insights-dashboard/issues">🐛 Report Bug</a>
+    <a href="https://github.com/zericksp/instagram-insights-dashboard/issues">🐛 Report Bug</a>
     ·
-    <a href="https://github.com/seuusuario/instagram-insights-dashboard/discussions">💡 Request Feature</a>
+    <a href="https://github.com/zericksp/instagram-insights-dashboard/discussions">💡 Request Feature</a>
   </p>
 </div>
