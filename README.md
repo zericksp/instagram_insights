@@ -289,8 +289,8 @@ composer install                     # Dependências (se usar)
 - Compartilhe ideias e melhorias
 
 ### 📧 Contato Direto
-- Email: [seu@email.com](mailto:seu@email.com)
-- LinkedIn: [Seu Nome](https://linkedin.com/in/seuperfil)
+- Email: [ricardo@tiven.com.br](mailto:ricardo@tiven.com.br)
+- LinkedIn: [Ricardo Santos](https://linkedin.com/in/ricardo-santos-28094a308)
 
 ---
 
