@@ -45,14 +45,9 @@ class _EngagementPageState extends State<EngagementPage> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: const [
-                  Text('Taxa de Engajamento',
-                      style: TextStyle(fontWeight: FontWeight.w500)),
+                  Text('Taxa de Engajamento', style: TextStyle(fontWeight: FontWeight.w500)),
                   SizedBox(height: 8),
-                  Text('4.2%',
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.purple)),
+                  Text('4.2%', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.purple)),
                   Text('+0.3%', style: TextStyle(color: Colors.green)),
                 ],
               ),
@@ -66,14 +61,9 @@ class _EngagementPageState extends State<EngagementPage> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: const [
-                  Text('Interações Totais',
-                      style: TextStyle(fontWeight: FontWeight.w500)),
+                  Text('Interações Totais', style: TextStyle(fontWeight: FontWeight.w500)),
                   SizedBox(height: 8),
-                  Text('328',
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.purple)),
+                  Text('328', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.purple)),
                   Text('+15', style: TextStyle(color: Colors.green)),
                 ],
               ),
@@ -105,15 +95,9 @@ class _EngagementPageState extends State<EngagementPage> {
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
                   barGroups: [
-                    BarChartGroupData(x: 0, barRods: [
-                      BarChartRodData(toY: 133, color: Colors.blue)
-                    ]),
-                    BarChartGroupData(x: 1, barRods: [
-                      BarChartRodData(toY: 63, color: Colors.purple)
-                    ]),
-                    BarChartGroupData(x: 2, barRods: [
-                      BarChartRodData(toY: 62, color: Colors.pink)
-                    ]),
+                    BarChartGroupData(x: 0, barRods: [BarChartRodData(toY: 133, color: Colors.blue)]),
+                    BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 63, color: Colors.purple)]),
+                    BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 62, color: Colors.pink)]),
                   ],
                   titlesData: FlTitlesData(
                     bottomTitles: AxisTitles(
@@ -121,14 +105,10 @@ class _EngagementPageState extends State<EngagementPage> {
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
                           switch (value.toInt()) {
-                            case 0:
-                              return const Text('Carrossel');
-                            case 1:
-                              return const Text('Vídeo');
-                            case 2:
-                              return const Text('Imagem');
-                            default:
-                              return const Text('');
+                            case 0: return const Text('Carrossel');
+                            case 1: return const Text('Vídeo');
+                            case 2: return const Text('Imagem');
+                            default: return const Text('');
                           }
                         },
                       ),
@@ -141,10 +121,8 @@ class _EngagementPageState extends State<EngagementPage> {
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
                 ),
               ),

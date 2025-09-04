@@ -69,8 +69,7 @@ class _ContentPageState extends State<ContentPage> {
         CircleAvatar(
           radius: 25,
           backgroundColor: color.withOpacity(0.2),
-          child: Text(value,
-              style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+          child: Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
         ),
         const SizedBox(height: 8),
         Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
@@ -111,8 +110,7 @@ class _ContentPageState extends State<ContentPage> {
                       child: const Icon(Icons.image),
                     ),
                     title: Text('Post ${index + 1}'),
-                    subtitle: Text(
-                        '${DateFormat('dd/MM/yyyy').format(DateTime.now().subtract(Duration(days: index)))}'),
+                    subtitle: Text('${DateFormat('dd/MM/yyyy').format(DateTime.now().subtract(Duration(days: index)))}'),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.end,

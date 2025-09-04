@@ -1,12 +1,12 @@
 // ========================================
-// lib/screens/overview_page.dart
+// lib/screens/overview_page.dart - VERSÃO SEM FL_CHART
 // ========================================
 
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../services/instagram_api_service.dart';
 import '../widgets/metric_card.dart';
+import '../widgets/simple_chart.dart'; // ← USANDO GRÁFICO SIMPLES
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({Key? key}) : super(key: key);
@@ -85,7 +85,7 @@ class _OverviewPageState extends State<OverviewPage> {
   /// Mostrar status do token e opções
   void _showTokenStatus(BuildContext context) async {
     try {
-      await _apiService.getOverviewData(); // ✅ USA INSTÂNCIA
+      await _apiService.getOverviewData();
       isValid = true;
     } catch (e) {
       isValid = false;
@@ -124,6 +124,20 @@ class _OverviewPageState extends State<OverviewPage> {
               'Se houver problemas, tente renovar o token.',
               style: TextStyle(fontSize: 14),
             ),
+            if (!isValid) ...[
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await _testServerConnection();
+                },
+                icon: const Icon(Icons.wifi_find),
+                label: const Text('Testar Conexão'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                ),
+              ),
+            ],
           ],
         ),
         actions: [
@@ -150,7 +164,7 @@ class _OverviewPageState extends State<OverviewPage> {
 
     try {
       await InstagramApiService.refreshToken();
-      await Future.delayed(const Duration(seconds: 2)); // Aguardar renovação
+      await Future.delayed(const Duration(seconds: 2));
       await _loadOverviewData();
 
       if (mounted) {
@@ -251,78 +265,9 @@ class _OverviewPageState extends State<OverviewPage> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Alcance dos últimos 7 dias',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 200,
-              child: LineChart(
-                LineChartData(
-                  gridData: const FlGridData(show: false),
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          return Text(
-                            _formatNumber(value.toInt()),
-                            style: const TextStyle(fontSize: 10),
-                          );
-                        },
-                      ),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          if (value.toInt() < reachData.length) {
-                            final date = DateTime.parse(
-                                reachData[value.toInt()]['date']);
-                            return Text(
-                              DateFormat('dd/MM').format(date),
-                              style: const TextStyle(fontSize: 10),
-                            );
-                          }
-                          return const Text('');
-                        },
-                      ),
-                    ),
-                    rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: reachData.asMap().entries.map((entry) {
-                        return FlSpot(
-                          entry.key.toDouble(),
-                          entry.value['reach'].toDouble(),
-                        );
-                      }).toList(),
-                      isCurved: true,
-                      color: Colors.pink,
-                      barWidth: 3,
-                      dotData: const FlDotData(show: false),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        color: Colors.pink.withOpacity(0.1),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+        child: SimpleChart(
+          data: reachData.cast<Map<String, dynamic>>(),
+          title: 'Alcance dos últimos 7 dias',
         ),
       ),
     );

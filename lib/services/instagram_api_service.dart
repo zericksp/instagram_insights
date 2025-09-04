@@ -1,5 +1,5 @@
 // ========================================
-// lib/services/instagram_api_service.dart - ATUALIZADO
+// lib/services/instagram_api_service.dart - CORRIGIDO
 // ========================================
 
 import 'dart:convert';
@@ -80,14 +80,63 @@ class InstagramApiService {
     }
   }
 
-  /// Limpar cache de token
+  /// Limpar cache de token (MÉTODO EM FALTA)
   static void clearTokenCache() {
     _cachedToken = null;
     _cachedAccountId = null;
     _cacheExpiry = null;
   }
 
-  /// Método principal para buscar insights (atualizado)
+  /// Renovar token forçadamente (MÉTODO EM FALTA)
+  static Future<void> refreshToken() async {
+    print('🔄 Limpando cache e forçando renovação de token...');
+    
+    // Limpar cache
+    clearTokenCache();
+    
+    try {
+      // Forçar busca de novo token
+      final credentials = await getActiveToken();
+      
+      if (credentials['token'] != null) {
+        print('✅ Token renovado com sucesso');
+      } else {
+        throw Exception('Falha ao obter novo token');
+      }
+    } catch (e) {
+      print('❌ Erro ao renovar token: $e');
+      rethrow;
+    }
+  }
+
+  /// Testar conexão com servidor de tokens (MÉTODO EM FALTA)
+  static Future<bool> testTokenServerConnection() async {
+    try {
+      print('🧪 Testando conexão com servidor de tokens...');
+      
+      // Tentar fazer uma requisição simples para o servidor
+      final response = await http.get(
+        Uri.parse(_tokenApiUrl),
+        headers: {
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200 || response.statusCode == 400) {
+        // 200 = OK, 400 = Bad Request (mas servidor está respondendo)
+        print('✅ Servidor acessível');
+        return true;
+      } else {
+        print('⚠️  Servidor respondeu com status: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Erro de conexão: $e');
+      return false;
+    }
+  }
+
+  /// Método principal para buscar insights
   Future<Map<String, dynamic>> getOverviewData() async {
     final credentials = await getActiveToken();
 
@@ -134,7 +183,7 @@ class InstagramApiService {
     }
   }
 
-  /// Processar dados da API (sem mudanças)
+  /// Processar dados da API
   Map<String, dynamic> _processInsightsData(Map<String, dynamic> data) {
     final insights = data['data'] as List? ?? [];
 
@@ -191,7 +240,7 @@ class InstagramApiService {
     }
   }
 
-  // Manter outros métodos existentes sem mudanças...
+  /// Dados mockados para follower
   Future<List<Map<String, dynamic>>> getFollowersData() async {
     return List.generate(7, (index) {
       final date = DateTime.now().subtract(Duration(days: 6 - index));
