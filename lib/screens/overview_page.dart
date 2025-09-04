@@ -19,6 +19,8 @@ class _OverviewPageState extends State<OverviewPage> {
   final InstagramApiService _apiService = InstagramApiService();
   Map<String, dynamic>? _overviewData;
   bool _isLoading = true;
+  late bool isValid;
+  late String errorMessage;
 
   @override
   void initState() {
@@ -53,6 +55,10 @@ class _OverviewPageState extends State<OverviewPage> {
             icon: const Icon(Icons.refresh),
             onPressed: _loadOverviewData,
           ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => _showTokenStatus(context),
+          ),
         ],
       ),
       body: _isLoading
@@ -61,7 +67,7 @@ class _OverviewPageState extends State<OverviewPage> {
               onRefresh: _loadOverviewData,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     _buildMetricsCards(),
@@ -74,6 +80,131 @@ class _OverviewPageState extends State<OverviewPage> {
               ),
             ),
     );
+  }
+
+  /// Mostrar status do token e opções
+  void _showTokenStatus(BuildContext context) async {
+    try {
+      await _apiService.getOverviewData(); // ✅ USA INSTÂNCIA
+      isValid = true;
+    } catch (e) {
+      isValid = false;
+      errorMessage = e.toString();
+    }
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Status do Token'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  isValid ? Icons.check_circle : Icons.error,
+                  color: isValid ? Colors.green : Colors.red,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isValid ? 'Token Válido' : 'Token Inválido',
+                  style: TextStyle(
+                    color: isValid ? Colors.green : Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Este app busca automaticamente tokens atualizados do servidor. '
+              'Se houver problemas, tente renovar o token.',
+              style: TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fechar'),
+          ),
+          if (!isValid)
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _refreshToken();
+              },
+              child: const Text('Renovar Token'),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Renovar token manualmente
+  Future<void> _refreshToken() async {
+    setState(() => _isLoading = true);
+
+    try {
+      await InstagramApiService.refreshToken();
+      await Future.delayed(const Duration(seconds: 2)); // Aguardar renovação
+      await _loadOverviewData();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cache limpo! Tentando obter novo token...'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao renovar token: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Testar conexão com servidor de tokens
+  Future<void> _testServerConnection() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final isConnected = await InstagramApiService.testTokenServerConnection();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isConnected
+                ? '✅ Servidor acessível! Verifique configuração dos tokens no backend.'
+                : '❌ Servidor não acessível. Configure a URL da API ou verifique se o backend está rodando.'),
+            backgroundColor: isConnected ? Colors.orange : Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao testar conexão: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   Widget _buildMetricsCards() {
@@ -97,7 +228,8 @@ class _OverviewPageState extends State<OverviewPage> {
             value: _formatNumber(_overviewData!['totalReach'] ?? 0),
             icon: Icons.visibility,
             color: Colors.green,
-            change: '+${((_overviewData!['reachGrowth'] ?? 0) * 100).toStringAsFixed(1)}%',
+            change:
+                '+${((_overviewData!['reachGrowth'] ?? 0) * 100).toStringAsFixed(1)}%',
           ),
         ),
       ],
@@ -115,7 +247,7 @@ class _OverviewPageState extends State<OverviewPage> {
     }
 
     final reachData = _overviewData!['reachData'] as List;
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -152,7 +284,8 @@ class _OverviewPageState extends State<OverviewPage> {
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
                           if (value.toInt() < reachData.length) {
-                            final date = DateTime.parse(reachData[value.toInt()]['date']);
+                            final date = DateTime.parse(
+                                reachData[value.toInt()]['date']);
                             return Text(
                               DateFormat('dd/MM').format(date),
                               style: const TextStyle(fontSize: 10),
@@ -162,8 +295,10 @@ class _OverviewPageState extends State<OverviewPage> {
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
                   ),
                   borderData: FlBorderData(show: false),
                   lineBarsData: [

@@ -56,11 +56,11 @@ class _FollowersPageState extends State<FollowersPage> {
           : RefreshIndicator(
               onRefresh: _loadFollowersData,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     _buildFollowersChart(),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 20),
                     _buildDemographicsCard(),
                   ],
                 ),
@@ -108,7 +108,8 @@ class _FollowersPageState extends State<FollowersPage> {
                               showTitles: true,
                               getTitlesWidget: (value, meta) {
                                 if (value.toInt() < _followersData.length) {
-                                  final date = DateTime.parse(_followersData[value.toInt()]['date']);
+                                  final date = DateTime.parse(
+                                      _followersData[value.toInt()]['date']);
                                   return Text(
                                     DateFormat('dd/MM').format(date),
                                     style: const TextStyle(fontSize: 10),
@@ -118,8 +119,10 @@ class _FollowersPageState extends State<FollowersPage> {
                               },
                             ),
                           ),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                          topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
                         ),
                         borderData: FlBorderData(show: true),
                         lineBarsData: [
@@ -165,20 +168,46 @@ class _FollowersPageState extends State<FollowersPage> {
                 Expanded(
                   child: Column(
                     children: [
-                      const Text('Por Região', style: TextStyle(fontWeight: FontWeight.w500)),
+                      const Text('Por Região',
+                          style: TextStyle(fontWeight: FontWeight.w500)),
                       const SizedBox(height: 12),
                       SizedBox(
                         height: 150,
                         child: PieChart(
                           PieChartData(
                             sections: [
-                              PieChartSectionData(value: 242, color: Colors.orange, title: 'SP'),
-                              PieChartSectionData(value: 138, color: Colors.deepOrange, title: 'CE'),
-                              PieChartSectionData(value: 48, color: Colors.orange.shade300, title: 'RJ'),
-                              PieChartSectionData(value: 41, color: Colors.orange.shade200, title: 'MG'),
-                              PieChartSectionData(value: 33, color: Colors.orange.shade100, title: 'Outros'),
+                              PieChartSectionData(
+                                value: 242,
+                                color: Colors.orange,
+                                title: 'SP',
+                                radius: 40,
+                              ),
+                              PieChartSectionData(
+                                value: 138,
+                                color: Colors.deepOrange,
+                                title: 'CE',
+                                radius: 40,
+                              ),
+                              PieChartSectionData(
+                                value: 48,
+                                color: Colors.orange.shade300,
+                                title: 'RJ',
+                                radius: 40,
+                              ),
+                              PieChartSectionData(
+                                value: 41,
+                                color: Colors.orange.shade200,
+                                title: 'MG',
+                                radius: 40,
+                              ),
+                              PieChartSectionData(
+                                value: 33,
+                                color: Colors.orange.shade100,
+                                title: 'Outros',
+                                radius: 40,
+                              ),
                             ],
-                            centerSpaceRadius: 40,
+                            centerSpaceRadius: 30,
                             sectionsSpace: 2,
                           ),
                         ),
@@ -190,20 +219,26 @@ class _FollowersPageState extends State<FollowersPage> {
                 Expanded(
                   child: Column(
                     children: const [
-                      Text('Por Idade', style: TextStyle(fontWeight: FontWeight.w500)),
+                      Text('Por Idade',
+                          style: TextStyle(fontWeight: FontWeight.w500)),
                       SizedBox(height: 12),
                       ListTile(
-                        leading: CircleAvatar(backgroundColor: Colors.blue, child: Text('25-34')),
+                        leading: CircleAvatar(
+                            backgroundColor: Colors.blue, child: Text('25-34')),
                         title: Text('35%'),
                         dense: true,
                       ),
                       ListTile(
-                        leading: CircleAvatar(backgroundColor: Colors.green, child: Text('18-24')),
+                        leading: CircleAvatar(
+                            backgroundColor: Colors.green,
+                            child: Text('18-24')),
                         title: Text('28%'),
                         dense: true,
                       ),
                       ListTile(
-                        leading: CircleAvatar(backgroundColor: Colors.orange, child: Text('35-44')),
+                        leading: CircleAvatar(
+                            backgroundColor: Colors.orange,
+                            child: Text('35-44')),
                         title: Text('22%'),
                         dense: true,
                       ),

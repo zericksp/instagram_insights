@@ -21,7 +21,8 @@ class InstagramInsightsApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         cardTheme: CardThemeData(
           elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
       home: const MainScreen(),
