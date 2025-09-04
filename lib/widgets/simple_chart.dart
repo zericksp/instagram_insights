@@ -99,7 +99,7 @@ class SimpleChart extends StatelessWidget {
                                     end: Alignment.topCenter,
                                     colors: [
                                       Colors.pink,
-                                      Colors.pink.withOpacity(0.7),
+                                      Colors.pink.withValues(alpha: 0.7),
                                     ],
                                   ),
                                 ),

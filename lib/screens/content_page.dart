@@ -68,7 +68,7 @@ class _ContentPageState extends State<ContentPage> {
       children: [
         CircleAvatar(
           radius: 25,
-          backgroundColor: color.withOpacity(0.2),
+          backgroundColor: color.withValues(alpha: 0.2),
           child: Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
         ),
         const SizedBox(height: 8),

@@ -1,200 +1,257 @@
-// ========================================
+// ===== 2. SERVICES =====
 // lib/services/auth_service.dart
 // ========================================
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/user_model.dart';
+import '../models/auth_response.dart';
 
 class AuthService {
-  static const String _baseUrl = 'https://seudominio.com/api';
+  static const String baseUrl = 'https://tiven.com.br/instagram/api';
+  // static const String baseUrl = 'http://10.0.2.2/tiven.com.br/instagram/api';
+  
+  // =======================================================================
+  // MÉTODOS DE INSTÂNCIA (para usar no AuthProvider)
+  // =======================================================================
+  
+  // ✅ Verificar se usuário está logado (MÉTODO DE INSTÂNCIA)
+  Future<bool> isLoggedIn() async {
+    final token = await AuthService.getAuthToken();
+    if (token == null) return false;
 
-  // Cache de autenticação
-  static String? _cachedToken;
-  static Map<String, dynamic>? _cachedUser;
-  static String? _cachedCnpj;
-
-  /// Fazer login com email e senha
-  static Future<Map<String, dynamic>> login(
-      String email, String password) async {
     try {
-      final response = await http
-          .post(
-            Uri.parse('$_baseUrl/auth/login.php'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-            body: json.encode({
-              'email': email,
-              'password': password,
-            }),
-          )
-          .timeout(const Duration(seconds: 15));
+      final response = await http.get(
+        Uri.parse('$baseUrl/verify_token.php'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final data = jsonDecode(response.body);
+        return data['valid'] == true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
 
-        if (data['success'] == true) {
-          // Salvar dados do usuário logado
-          await _saveAuthData(
-            data['token'],
-            data['user'],
-            data['company'],
-          );
+  // ✅ Obter usuário atual (MÉTODO DE INSTÂNCIA)
+  Future<UserModel?> getCurrentUser() async {
+    final token = await AuthService.getAuthToken();
+    if (token == null) return null;
 
-          return {
-            'success': true,
-            'user': data['user'],
-            'company': data['company'],
-            'token': data['token'],
-          };
-        } else {
-          return {
-            'success': false,
-            'error': data['error'] ?? 'Erro desconhecido',
-          };
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/user_profile.php'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] && data['user'] != null) {
+          final user = UserModel.fromJson(data['user']);
+          // Salvar dados atualizados localmente
+          await AuthService.saveUserData(data['user']);
+          return user;
         }
+      }
+      
+      // Se falhar a consulta no servidor, tentar dados locais
+      final userData = await AuthService.getUserData();
+      if (userData != null) {
+        return UserModel.fromJson(userData);
+      }
+      
+      return null;
+    } catch (e) {
+      // Em caso de erro, tentar dados locais
+      final userData = await AuthService.getUserData();
+      if (userData != null) {
+        return UserModel.fromJson(userData);
+      }
+      return null;
+    }
+  }
+
+  // ✅ Login com email e senha (MÉTODO DE INSTÂNCIA)
+  Future<AuthResponse> login(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      
+      if (response.statusCode == 200 && data['success']) {
+        // Salvar dados localmente
+        if (data['token'] != null) {
+          await AuthService.saveAuthToken(data['token']);
+        }
+        if (data['user'] != null) {
+          await AuthService.saveUserData(data['user']);
+        }
+        if (data['company_data'] != null) {
+          await AuthService.saveCompanyData(data['company_data']);
+        }
+        
+        return AuthResponse.fromJson(data);
       } else {
-        return {
-          'success': false,
-          'error': 'Erro de conexão: ${response.statusCode}',
-        };
+        return AuthResponse(
+          success: false,
+          message: data['message'] ?? 'Erro no login',
+        );
       }
     } catch (e) {
-      return {
-        'success': false,
-        'error': 'Erro de rede: $e',
-      };
+      return AuthResponse(
+        success: false,
+        message: 'Erro de conexão: $e',
+      );
     }
   }
 
-  /// Verificar se usuário está logado
-  static Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-    final expiry = prefs.getString('auth_expiry');
+  // ✅ Registro de novo usuário (MÉTODO DE INSTÂNCIA)
+  Future<AuthResponse> register(String name, String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/register.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'name': name,
+          'email': email,
+          'password': password,
+        }),
+      );
 
-    if (token == null || expiry == null) {
-      return false;
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return AuthResponse.fromJson(data);
+    } catch (e) {
+      return AuthResponse(
+        success: false,
+        message: 'Erro de conexão: $e',
+      );
     }
-
-    // Verificar se token não expirou
-    final expiryDate = DateTime.parse(expiry);
-    if (DateTime.now().isAfter(expiryDate)) {
-      await logout();
-      return false;
-    }
-
-    // Carregar dados em cache
-    _cachedToken = token;
-    _cachedUser = json.decode(prefs.getString('auth_user') ?? '{}');
-    _cachedCnpj = prefs.getString('company_cnpj');
-
-    return true;
   }
 
-  /// Obter dados do usuário logado
-  static Future<Map<String, dynamic>?> getCurrentUser() async {
-    if (_cachedUser != null) {
-      return _cachedUser;
-    }
+  // ✅ Conectar conta Instagram (MÉTODO DE INSTÂNCIA)
+  Future<AuthResponse> connectInstagram(String accessToken, String instagramCode) async {
+    try {
+      final userToken = await AuthService.getAuthToken();
+      if (userToken == null) {
+        return AuthResponse(success: false, message: 'Usuário não autenticado');
+      }
 
+      final response = await http.post(
+        Uri.parse('$baseUrl/connect_instagram.php'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $userToken',
+        },
+        body: jsonEncode({
+          'instagram_code': instagramCode,
+        }),
+      );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      
+      // Atualizar dados do usuário se sucesso
+      if (data['success'] && data['user'] != null) {
+        await AuthService.saveUserData(data['user']);
+      }
+      
+      return AuthResponse.fromJson(data);
+    } catch (e) {
+      return AuthResponse(
+        success: false,
+        message: 'Erro ao conectar Instagram: $e',
+      );
+    }
+  }
+
+
+  // Obter CNPJ da empresa
+  static Future<Map<String, dynamic>?> getCompanyData() async {
     final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString('auth_user');
-
-    if (userJson != null) {
-      _cachedUser = json.decode(userJson);
-      return _cachedUser;
+    final companyDataString = prefs.getString('company_data');
+    if (companyDataString != null && companyDataString.isNotEmpty) {
+      return jsonDecode(companyDataString);
     }
-
     return null;
   }
 
-  /// Obter CNPJ da empresa do usuário logado
-  static Future<String?> getCompanyCnpj() async {
-    if (_cachedCnpj != null) {
-      return _cachedCnpj;
-    }
 
-    final prefs = await SharedPreferences.getInstance();
-    _cachedCnpj = prefs.getString('company_cnpj');
-
-    return _cachedCnpj;
-  }
-
-  /// Obter token de autenticação
+  // Obter token de autenticação
   static Future<String?> getAuthToken() async {
-    if (_cachedToken != null) {
-      return _cachedToken;
-    }
-
     final prefs = await SharedPreferences.getInstance();
-    _cachedToken = prefs.getString('auth_token');
-
-    return _cachedToken;
+    return prefs.getString('token');
   }
 
-  /// Fazer logout
+  // Fazer logout (versão estática)
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('auth_user');
-    await prefs.remove('auth_expiry');
-    await prefs.remove('company_cnpj');
+    await prefs.remove('token');
     await prefs.remove('company_data');
-
-    // Limpar cache
-    _cachedToken = null;
-    _cachedUser = null;
-    _cachedCnpj = null;
+    await prefs.remove('user_data');
+    await prefs.remove('instagram_token');
+    await prefs.remove('instagram_user_id');
   }
 
-  /// Salvar dados de autenticação
-  static Future<void> _saveAuthData(
-    String token,
-    Map<String, dynamic> user,
-    Map<String, dynamic> company,
-  ) async {
+  // Salvar CNPJ da empresa
+  static Future<void> saveCompanyData(String cnpj) async {
     final prefs = await SharedPreferences.getInstance();
-
-    // Token expira em 7 dias
-    final expiry = DateTime.now().add(const Duration(days: 7));
-
-    await prefs.setString('auth_token', token);
-    await prefs.setString('auth_user', json.encode(user));
-    await prefs.setString('auth_expiry', expiry.toIso8601String());
-    await prefs.setString('company_cnpj', company['cmp_cnpj']);
-    await prefs.setString('company_data', json.encode(company));
-
-    // Atualizar cache
-    _cachedToken = token;
-    _cachedUser = user;
-    _cachedCnpj = company['cmp_cnpj'];
+    await prefs.setString('company_data', jsonEncode(cnpj));
   }
 
-  /// Validar token no servidor
-  static Future<bool> validateToken() async {
-    try {
-      final token = await getAuthToken();
-      if (token == null) return false;
+  // Salvar token de autenticação
+  static Future<void> saveAuthToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+  }
 
-      final response = await http.get(
-        Uri.parse('$_baseUrl/auth/validate.php'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['valid'] == true;
-      }
-
-      return false;
-    } catch (e) {
-      return false;
+  // Obter dados completos do usuário (versão estática)
+  static Future<Map<String, dynamic>?> getUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userDataString = prefs.getString('user_data');
+    if (userDataString != null && userDataString.isNotEmpty) {
+      return jsonDecode(userDataString);
     }
+    return null;
+  }
+
+  // Salvar dados completos do usuário
+  static Future<void> saveUserData(Map<String, dynamic> userData) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_data', jsonEncode(userData));
+  }
+
+  // Verificar se usuário está logado (versão estática - simples)
+  static Future<bool> isLoggedInStatic() async {
+    final token = await getAuthToken();
+    return token != null && token.isNotEmpty;
+  }
+
+  // Salvar token do Instagram
+  static Future<void> saveInstagramToken(String token, String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('instagram_token', token);
+    await prefs.setString('instagram_user_id', userId);
+  }
+
+  // Obter token do Instagram
+  static Future<String?> getInstagramToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('instagram_token');
+  }
+
+  // Obter ID do usuário Instagram
+  static Future<String?> getInstagramUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('instagram_user_id');
   }
 }

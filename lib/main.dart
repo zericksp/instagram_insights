@@ -1,31 +1,34 @@
-// ========================================
-// lib/main.dart
-// ========================================
-
+// lib/main.dart (VERSÃO CORRIGIDA)
 import 'package:flutter/material.dart';
-import 'screens/main_screen.dart';
+import 'package:provider/provider.dart';
+import 'providers/auth_provider.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
-  runApp(const InstagramInsightsApp());
+  runApp(MyApp());
 }
 
-class InstagramInsightsApp extends StatelessWidget {
-  const InstagramInsightsApp({Key? key}) : super(key: key);
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Instagram Insights',
-      theme: ThemeData(
-        primarySwatch: Colors.pink,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        cardTheme: CardThemeData(
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return MultiProvider(
+      providers: [
+        // ✅ IMPORTANTE: AuthProvider deve estar AQUI
+        ChangeNotifierProvider(create: (context) => AuthProvider()),
+        
+        // Se tiver outros providers, adicione aqui:
+        // ChangeNotifierProvider(create: (context) => OutroProvider()),
+      ],
+      child: MaterialApp(
+        title: 'Instagram Insights',
+        theme: ThemeData(
+          primarySwatch: Colors.purple,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
+        // ✅ IMPORTANTE: SplashScreen deve estar DENTRO do MultiProvider
+        home: SplashScreen(),
+        debugShowCheckedModeBanner: false,
       ),
-      home: const MainScreen(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }

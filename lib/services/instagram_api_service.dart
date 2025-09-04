@@ -31,7 +31,7 @@ class InstagramApiService {
 
     try {
       // Obter CNPJ do usuário logado
-      final cnpj = await AuthService.getCompanyCnpj();
+      final cnpj = await AuthService.getCompanyData();
       final authToken = await AuthService.getAuthToken();
 
       if (cnpj == null || authToken == null) {
@@ -69,6 +69,7 @@ class InstagramApiService {
         }
       } else if (response.statusCode == 401) {
         // Token expirado, fazer logout
+        final AuthService _authService = AuthService();
         await AuthService.logout();
         throw Exception('Sessão expirada. Faça login novamente.');
       } else {
@@ -173,6 +174,7 @@ class InstagramApiService {
       } else if (response.statusCode == 401) {
         clearTokenCache();
         await AuthService.logout();
+
         throw Exception('Sessão expirada. Faça login novamente.');
       } else {
         throw Exception('Erro HTTP ${response.statusCode}: ${response.body}');
