@@ -10,7 +10,7 @@ import 'auth_service.dart';
 class InstagramApiService {
   static const String _baseUrl = 'https://graph.facebook.com/v18.0';
   static const String _tokenApiUrl =
-      'https://tiven.com.br/api/instagram/get_token.php';
+      'https://www.tiven.com.br/instagram/api/get_token.php';
 
   // Cache do token em memória (obtido por CNPJ)
   static String? _cachedToken;

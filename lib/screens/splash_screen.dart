@@ -1,6 +1,7 @@
 // lib/screens/splash_screen.dart (VERSÃO CORRIGIDA)
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 import 'login_page.dart';
 import 'main_page.dart';
@@ -46,15 +47,17 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _initializeApp() async {
     // Aguardar animação
-    await Future.delayed(const Duration(seconds: 2));
-    
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await Future.delayed(const Duration(seconds: 2));      
+  final bool isLogged = prefs.getBool('isLogged') != null;
+
     if (mounted) {
       // ✅ AQUI está o Consumer que estava dando erro
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       await authProvider.checkAuthStatus();
-      
+
       // Navegar baseado no status
-      if (authProvider.isLoggedIn && authProvider.user != null) {
+      if ( isLogged || (authProvider.isLoggedIn && authProvider.user != null)) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );

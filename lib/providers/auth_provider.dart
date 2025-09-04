@@ -1,5 +1,6 @@
 // lib/providers/auth_provider.dart (VERSÃO ALTERNATIVA)
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 
@@ -53,14 +54,14 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
       final response = await _authService.login(email, password);
-      
+      SharedPreferences prefs = await SharedPreferences.getInstance();
       if (response.success && response.user != null) {
         _user = response.user;
         _isLoggedIn = true;
         _isLoading = false;
+        await prefs.setBool('isLoggedIn', true);
         notifyListeners();
         return true;
       } else {
