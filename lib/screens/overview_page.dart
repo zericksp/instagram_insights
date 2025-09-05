@@ -9,7 +9,7 @@ import '../widgets/metric_card.dart';
 import '../widgets/simple_chart.dart'; // ← USANDO GRÁFICO SIMPLES
 
 class OverviewPage extends StatefulWidget {
-  const OverviewPage({Key? key}) : super(key: key);
+  const OverviewPage({super.key});
 
   @override
   State<OverviewPage> createState() => _OverviewPageState();

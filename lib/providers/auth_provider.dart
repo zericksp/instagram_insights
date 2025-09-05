@@ -6,8 +6,6 @@ import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
-  
-  
   UserModel? _user;
   bool _isLoading = false;
   String? _error;
@@ -25,10 +23,15 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Usar método estático simples primeiro
-      AuthService _authService = AuthService();
-      _isLoggedIn = await _authService.isLoggedIn();
-      
+      // verifica se esta logado no SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+      if (!_isLoggedIn) {
+        // Usar método estático simples primeiro
+        AuthService _authService = AuthService();
+        _isLoggedIn = await _authService.isLoggedIn();
+      }
+
       if (_isLoggedIn) {
         // Tentar obter dados do usuário
         final userData = await AuthService.getUserData();
@@ -86,7 +89,7 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final response = await _authService.register(name, email, password);
-      
+
       if (response.success) {
         _isLoading = false;
         notifyListeners();
@@ -114,8 +117,8 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _authService.connectInstagram('',instagramCode);
-      
+      final response = await _authService.connectInstagram('', instagramCode);
+
       if (response.success && response.user != null) {
         _user = response.user;
         _isLoading = false;

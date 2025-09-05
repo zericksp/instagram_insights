@@ -11,11 +11,11 @@ import '../models/auth_response.dart';
 class AuthService {
   static const String baseUrl = 'https://tiven.com.br/instagram/api';
   // static const String baseUrl = 'http://10.0.2.2/tiven.com.br/instagram/api';
-  
+
   // =======================================================================
   // MÉTODOS DE INSTÂNCIA (para usar no AuthProvider)
   // =======================================================================
-  
+
   // ✅ Verificar se usuário está logado (MÉTODO DE INSTÂNCIA)
   Future<bool> isLoggedIn() async {
     final token = await AuthService.getAuthToken();
@@ -57,13 +57,13 @@ class AuthService {
           return user;
         }
       }
-      
+
       // Se falhar a consulta no servidor, tentar dados locais
       final userData = await AuthService.getUserData();
       if (userData != null) {
         return UserModel.fromJson(userData);
       }
-      
+
       return null;
     } catch (e) {
       // Em caso de erro, tentar dados locais
@@ -88,7 +88,7 @@ class AuthService {
       );
 
       final Map<String, dynamic> data = jsonDecode(response.body);
-      
+
       if (response.statusCode == 200 && data['success']) {
         // Salvar dados localmente
         if (data['token'] != null) {
@@ -97,10 +97,10 @@ class AuthService {
         if (data['user'] != null) {
           await AuthService.saveUserData(data['user']);
         }
-        if (data['company_data'] != null) {
-          await AuthService.saveCompanyData(data['company_data']);
+        if (data['company'] != null) {
+          await AuthService.saveCompanyData(data['company']);
         }
-        
+
         return AuthResponse.fromJson(data);
       } else {
         return AuthResponse(
@@ -117,7 +117,8 @@ class AuthService {
   }
 
   // ✅ Registro de novo usuário (MÉTODO DE INSTÂNCIA)
-  Future<AuthResponse> register(String name, String email, String password) async {
+  Future<AuthResponse> register(
+      String name, String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/register.php'),
@@ -140,7 +141,8 @@ class AuthService {
   }
 
   // ✅ Conectar conta Instagram (MÉTODO DE INSTÂNCIA)
-  Future<AuthResponse> connectInstagram(String accessToken, String instagramCode) async {
+  Future<AuthResponse> connectInstagram(
+      String accessToken, String instagramCode) async {
     try {
       final userToken = await AuthService.getAuthToken();
       if (userToken == null) {
@@ -159,12 +161,12 @@ class AuthService {
       );
 
       final Map<String, dynamic> data = jsonDecode(response.body);
-      
+
       // Atualizar dados do usuário se sucesso
       if (data['success'] && data['user'] != null) {
         await AuthService.saveUserData(data['user']);
       }
-      
+
       return AuthResponse.fromJson(data);
     } catch (e) {
       return AuthResponse(
@@ -173,7 +175,6 @@ class AuthService {
       );
     }
   }
-
 
   // Obter CNPJ da empresa
   static Future<Map<String, dynamic>?> getCompanyData() async {
@@ -184,7 +185,6 @@ class AuthService {
     }
     return null;
   }
-
 
   // Obter token de autenticação
   static Future<String?> getAuthToken() async {
@@ -203,9 +203,14 @@ class AuthService {
   }
 
   // Salvar CNPJ da empresa
-  static Future<void> saveCompanyData(String cnpj) async {
+  static Future<void> saveCompanyData(Map<String, dynamic> companyData) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('company_data', jsonEncode(cnpj));
+    await prefs.setInt('company_id', companyData['id'] ?? 0);
+    await prefs.setString('company_cnpj', companyData['cmp_cnpj'] ?? '');
+    await prefs.setString('company_name', companyData['cmp_companyName'] ?? '');
+    await prefs.setString(
+        'company_fantasyName', companyData['cmp_fantasyName'] ?? '');
+    await prefs.setString('company_plan', companyData['cmp_plan'] ?? '');
   }
 
   // Salvar token de autenticação
@@ -217,9 +222,14 @@ class AuthService {
   // Obter dados completos do usuário (versão estática)
   static Future<Map<String, dynamic>?> getUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    final userDataString = prefs.getString('user_data');
-    if (userDataString != null && userDataString.isNotEmpty) {
-      return jsonDecode(userDataString);
+    final userDataString = prefs.getString('user_email');
+      if (userDataString != null && userDataString.isNotEmpty) {
+        return {
+        'id': prefs.getInt('user_id') ?? 0,
+        'name': prefs.getString('user_name') ?? '',
+        'email': prefs.getString('user_email') ?? '',
+        'role': prefs.getString('user_role') ?? '',
+      };
     }
     return null;
   }
@@ -227,7 +237,10 @@ class AuthService {
   // Salvar dados completos do usuário
   static Future<void> saveUserData(Map<String, dynamic> userData) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_data', jsonEncode(userData));
+    await prefs.setInt('user_id', userData['id'] ?? 0);
+    await prefs.setString('user_name', userData['name'] ?? '');
+    await prefs.setString('user_email', userData['email'] ?? '');
+    await prefs.setString('user_role', userData['role'] ?? '');
   }
 
   // Verificar se usuário está logado (versão estática - simples)

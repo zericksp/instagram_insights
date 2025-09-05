@@ -2,6 +2,7 @@
 // lib/screens/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 import 'register_page.dart';
 import 'main_page.dart'; // ou o nome da sua tela principal
@@ -50,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // Limpar erros anteriores
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     authProvider.clearError();
-    
+
     // Validar formulário
     if (!_formKey.currentState!.validate()) {
       return;
@@ -67,6 +68,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (success) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        // await prefs.setBool('isLoggedIn', true);
         // Login bem-sucedido - navegar para tela principal
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -86,12 +89,13 @@ class _LoginScreenState extends State<LoginScreen> {
         // Navegar para a tela principal
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const MainScreen(), // Substitua pela sua tela principal
+            builder: (context) =>
+                const MainScreen(), // Substitua pela sua tela principal
           ),
         );
       } else {
-        // Login falhou - mostrar erro
         ScaffoldMessenger.of(context).showSnackBar(
+          // Login falhou - mostrar erro
           SnackBar(
             content: Row(
               children: [
@@ -99,7 +103,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    authProvider.error ?? 'Erro no login. Verifique suas credenciais.',
+                    authProvider.error ??
+                        'Erro no login. Verifique suas credenciais.',
                   ),
                 ),
               ],
@@ -120,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       // Erro inesperado
       if (!mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -139,7 +144,6 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -211,7 +215,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF833AB4), width: 2),
+                              borderSide: const BorderSide(
+                                  color: Color(0xFF833AB4), width: 2),
                             ),
                           ),
                         ),
@@ -228,8 +233,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             prefixIcon: const Icon(Icons.lock_outlined),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword 
-                                    ? Icons.visibility_outlined 
+                                _obscurePassword
+                                    ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
                               ),
                               onPressed: () {
@@ -243,10 +248,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF833AB4), width: 2),
+                              borderSide: const BorderSide(
+                                  color: Color(0xFF833AB4), width: 2),
                             ),
                           ),
-                          onFieldSubmitted: (_) => _handleLogin(), // Enter para fazer login
+                          onFieldSubmitted: (_) =>
+                              _handleLogin(), // Enter para fazer login
                         ),
                         const SizedBox(height: 24),
 
@@ -256,7 +263,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             return Container(
                               height: 56,
                               child: ElevatedButton(
-                                onPressed: authProvider.isLoading ? null : _handleLogin,
+                                onPressed: authProvider.isLoading
+                                    ? null
+                                    : _handleLogin,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF833AB4),
                                   foregroundColor: Colors.white,
@@ -264,11 +273,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   elevation: 4,
-                                  shadowColor: const Color(0xFF833AB4).withValues(alpha: 0.3),
+                                  shadowColor: const Color(0xFF833AB4)
+                                      .withValues(alpha: 0.3),
                                 ),
                                 child: authProvider.isLoading
                                     ? const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           SizedBox(
                                             width: 20,
@@ -289,7 +300,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ],
                                       )
                                     : const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Icon(Icons.login, size: 20),
                                           SizedBox(width: 8),
@@ -314,7 +326,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             // TODO: Implementar recuperação de senha
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Funcionalidade em desenvolvimento'),
+                                content:
+                                    Text('Funcionalidade em desenvolvimento'),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -339,7 +352,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               child: Text(
                                 'ou',
                                 style: TextStyle(

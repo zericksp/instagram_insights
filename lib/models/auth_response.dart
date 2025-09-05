@@ -6,12 +6,14 @@ class AuthResponse {
   final String? message;
   final UserModel? user;
   final String? accessToken;
+  final String? userAccessToken;
 
   AuthResponse({
     required this.success,
     this.message,
     this.user,
     this.accessToken,
+    this.userAccessToken,
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class AuthResponse {
       message: json['message'],
       user: json['user'] != null ? UserModel.fromJson(json['user']) : null,
       accessToken: json['access_token'],
+      userAccessToken: json['user_access_token'],
     );
   }
 }

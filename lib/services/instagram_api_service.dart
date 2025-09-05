@@ -91,14 +91,14 @@ class InstagramApiService {
   /// Renovar token forçadamente (MÉTODO EM FALTA)
   static Future<void> refreshToken() async {
     print('🔄 Limpando cache e forçando renovação de token...');
-    
+
     // Limpar cache
     clearTokenCache();
-    
+
     try {
       // Forçar busca de novo token
       final credentials = await getActiveToken();
-      
+
       if (credentials['token'] != null) {
         print('✅ Token renovado com sucesso');
       } else {
@@ -114,7 +114,7 @@ class InstagramApiService {
   static Future<bool> testTokenServerConnection() async {
     try {
       print('🧪 Testando conexão com servidor de tokens...');
-      
+
       // Tentar fazer uma requisição simples para o servidor
       final response = await http.get(
         Uri.parse(_tokenApiUrl),
@@ -139,22 +139,24 @@ class InstagramApiService {
 
   /// Método principal para buscar insights
   Future<Map<String, dynamic>> getOverviewData() async {
-    final credentials = await getActiveToken();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    if (credentials['token'] == null || credentials['accountId'] == null) {
+    // final credentials = await getActiveToken();
+    final token = prefs.getString('token') ?? '';
+    final accountId = prefs.getString('accountId') ?? '';
+
+    if (token == '') {
       throw Exception('Token de acesso não disponível para esta empresa');
     }
 
-    final token = credentials['token']!;
-    final accountId = credentials['accountId']!;
-
     try {
       final insightsUrl = '$_baseUrl/$accountId/insights?'
-          'metric=follower_count,reach,impressions&'
+          'metric=follower_count,reach&'
           'period=day&'
           'access_token=$token';
 
       print('🔍 Buscando insights para conta: $accountId');
+      print('🔍 Buscando insights na url: $insightsUrl');
 
       final response = await http.get(Uri.parse(insightsUrl)).timeout(
             const Duration(seconds: 15),

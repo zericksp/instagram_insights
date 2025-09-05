@@ -19,12 +19,12 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -34,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen>
     ));
 
     _animationController.forward();
-    
+
     // Inicializar app após a animação
     _initializeApp();
   }
@@ -47,9 +47,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _initializeApp() async {
     // Aguardar animação
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  await Future.delayed(const Duration(seconds: 2));      
-  final bool isLogged = prefs.getBool('isLogged') != null;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await Future.delayed(const Duration(seconds: 2));
 
     if (mounted) {
       // ✅ AQUI está o Consumer que estava dando erro
@@ -57,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen>
       await authProvider.checkAuthStatus();
 
       // Navegar baseado no status
-      if ( isLogged || (authProvider.isLoggedIn && authProvider.user != null)) {
+      if (authProvider.isLoggedIn && authProvider.user != null) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
@@ -115,7 +114,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Título
                 Text(
                   'Instagram Insights',
@@ -133,7 +132,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Subtítulo
                 Text(
                   'Dashboard Analytics',
@@ -143,7 +142,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const SizedBox(height: 48),
-                
+
                 // Indicador de carregamento
                 const CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
